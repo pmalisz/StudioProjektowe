@@ -68,9 +68,11 @@ class EvolutionaryAlgorithm:
         for i in range(UNIVERSE_SIZE):
             coefficients = []
             for j in range(6):
-                coefficients.append(random.uniform(self.min_coefficient, self.max_coefficient))
+                coefficients.append(round(random.uniform(self.min_coefficient, self.max_coefficient), 2))
 
-            self.universe.append(Singel(coefficients))
+            probability = random.uniform(0, 1)
+
+            self.universe.append(Singel(coefficients, probability))
 
     def setup_population(self):
         self.population.extend(self.self_creation(POPULATION_SIZE))
