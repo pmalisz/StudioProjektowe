@@ -1,4 +1,5 @@
 import numpy as np
+import utils.img_processor
 
 from models.singel import Singel
 
@@ -13,8 +14,8 @@ class Ifs:
         self.degree = len(singels)
         self.fitness = float("inf")
 
-    # TODO
-    def calculate_fitness(self, origin: np.ndarray):
+    def calculate_fitness(self, origin: np.ndarray, iterations: int, size: int, ):
+        gen = utils.generate_fractal(iterations, size, )
         raise NotImplementedError()
 
     # TODO

@@ -26,7 +26,7 @@ class EvolutionaryAlgorithm:
         self.universe = []
         self.population = []
         self.read_data_from_file(data_file_name)
-        self.fractal = cv2.imread(img_file_name)
+        self.read_fractal_from_file(img_file_name)
         self.setup()
 
     def read_data_from_file(self, file_name: str):
@@ -38,6 +38,11 @@ class EvolutionaryAlgorithm:
         self.max_coefficient = float(f.readline())
 
         f.close()
+
+    def read_fractal_from_file(self, file_name: str):
+        self.fractal = cv2.imread(file_name)
+        self.fractal = cv2.cvtColor(self.fractal, cv2.COLOR_BGR2GRAY)
+        self.fractal = cv2.threshold(self.fractal, 254, 255, cv2.THRESH_BINARY)[1]
 
     def setup(self):
         self.setup_degree_probabilities()
@@ -83,9 +88,9 @@ class EvolutionaryAlgorithm:
 
         return result
 
-    # TODO
     def fitness_function(self):
-        raise NotImplementedError()
+        for ifs in self.population:
+            ifs.calculate_fitness(self.fractal, self.iterations, self.size)
 
     # TODO
     def evolve(self):

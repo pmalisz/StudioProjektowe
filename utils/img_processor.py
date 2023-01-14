@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def generate_fractal(self, iterations, size, functions, probability):
+def generate_fractal(iterations, size, functions, probability):
     points = [[0, 0]]
     for i in range(iterations):
         function_number = draw_function(probability)
