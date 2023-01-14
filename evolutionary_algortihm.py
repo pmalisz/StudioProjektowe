@@ -1,6 +1,5 @@
-import random
-
 import cv2
+import random
 import numpy as np
 
 from utils.consts import *
@@ -67,8 +66,13 @@ class EvolutionaryAlgorithm:
     def setup_universe(self):
         for i in range(UNIVERSE_SIZE):
             coefficients = []
-            for j in range(6):
-                coefficients.append(round(random.uniform(self.min_coefficient, self.max_coefficient), 2))
+            # a b c d
+            for j in range(4):
+                coefficients.append(random.uniform(-1, 1))
+
+            # e f
+            for j in range(2):
+                coefficients.append(random.uniform(self.min_coefficient, self.max_coefficient))
 
             probability = random.uniform(0, 1)
 

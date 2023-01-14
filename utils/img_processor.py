@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 def draw_function(probability):  # number of position in list define number of function
@@ -7,7 +6,7 @@ def draw_function(probability):  # number of position in list define number of f
 
 
 def apply_function(function, point):
-    matrix_to_multiplicity = np.array([point[0], point[1], 1]).astype(np.float)
+    matrix_to_multiplicity = np.array([point[0], point[1], 1])
     x = np.sum(np.multiply(function[0], matrix_to_multiplicity))
     y = np.sum(np.multiply(function[1], matrix_to_multiplicity))
     return [x, y]
@@ -18,17 +17,18 @@ def scale_and_round(points, size):
     return normalizedData
 
 
-def draw_image(points, size):
+def get_image(points, size):
     points = points.astype(int)
-    image = np.zeros((size + 1, size + 1))
+    image = np.full((size + 1, size + 1), 255)
     for point in points:
-        image[point[0]][point[1]] = 255
-    plt.imshow(image)
+        image[point[0]][point[1]] = 0
+
+    return image
 
 
 class ImgProcessor:
     @staticmethod
-    def generate_fractal(iterations, size, functions, probability, draw_img=False):
+    def generate_fractal(iterations, size, functions, probability):
         points = [[0, 0]]
         for i in range(iterations):
             function_number = draw_function(probability)
@@ -36,6 +36,5 @@ class ImgProcessor:
             if k[0] is not float("inf") and k[1] is not float("inf"):
                 points.append(k)
         points = scale_and_round(points, size)
-        if draw_img:
-            draw_image(points, size)
-        return points
+
+        return get_image(points, size)

@@ -1,4 +1,6 @@
+import copy
 import math
+
 import numpy as np
 from utils.img_processor import ImgProcessor
 
@@ -11,7 +13,7 @@ class Ifs:
     singels: list[Singel]
 
     def __init__(self, singels: list[Singel]):
-        self.singels = singels.copy()
+        self.singels = copy.deepcopy(singels)
         self.degree = len(singels)
         self.fitness = float("inf")
         self.normalize_singles_probabilities()
@@ -27,10 +29,12 @@ class Ifs:
         if not math.isclose(diff, 0):
             while True:
                 random_singel_index = np.random.randint(0, self.degree)
-                if self.singels[random_singel_index].probability > diff:
-                    self.singels[random_singel_index].probability -= diff
+                random_singel = self.singels[random_singel_index]
+                if random_singel.probability > diff:
+                    random_singel.probability -= diff
                     break
 
+    # TODO img augmentation
     def calculate_fitness(self, origin: np.ndarray, iterations: int, size: int):
         functions = np.ndarray(shape=(self.degree, 2, 3), dtype=float)
         for idx, singel in enumerate(self.singels):
@@ -38,8 +42,16 @@ class Ifs:
 
         probabilities = [singel.probability for singel in self.singels]
 
-        gen = ImgProcessor.generate_fractal(iterations, size, functions, probabilities)
-        # TODO
+        generated_img = ImgProcessor.generate_fractal(iterations, size, functions, probabilities)
+
+        # TODO Na razie działa to z założeniem że rozmiar obrazu wejściowego jest taki jak obrazów generowanych
+        self.fitness = size ** 2
+        for x in range(size):
+            for y in range(size):
+                if generated_img[x][y] == origin[x][y]:
+                    self.fitness -= 1
+
+        print(self.fitness)
 
     # TODO
     def mutate(self):
