@@ -11,6 +11,7 @@ class Ifs:
     degree: int
     fitness: float
     singels: list[Singel]
+    fractal: np.ndarray
 
     def __init__(self, singels: list[Singel]):
         self.singels = copy.deepcopy(singels)
@@ -19,6 +20,11 @@ class Ifs:
         self.normalize_singles_probabilities()
 
     def normalize_singles_probabilities(self):
+        """
+            IFS is created from universe of random singels with random probabilities, so those probabilities have to be
+            normalized, so they sum up to 1 within given IFS
+        """
+
         probabilities = [singel.probability for singel in self.singels]
         normalized_probabilities = [float(i) / sum(probabilities) for i in probabilities]
 
@@ -42,16 +48,14 @@ class Ifs:
 
         probabilities = [singel.probability for singel in self.singels]
 
-        generated_img = ImgProcessor.generate_fractal(iterations, size, functions, probabilities)
+        self.fractal = ImgProcessor.generate_fractal(iterations, size, functions, probabilities)
 
         # TODO Na razie działa to z założeniem że rozmiar obrazu wejściowego jest taki jak obrazów generowanych
-        self.fitness = size ** 2
+        self.fitness = size**2
         for x in range(size):
             for y in range(size):
-                if generated_img[x][y] == origin[x][y]:
+                if self.fractal[x][y] == origin[x][y]:
                     self.fitness -= 1
-
-        print(self.fitness)
 
     # TODO
     def mutate(self):
