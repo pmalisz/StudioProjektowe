@@ -7,6 +7,7 @@ import numpy as np
 from utils.consts import *
 from models.ifs import Ifs
 from models.singel import Singel
+from utils.math_helper import MathHelper
 
 
 class EvolutionaryAlgorithm:
@@ -99,7 +100,7 @@ class EvolutionaryAlgorithm:
             coefficients = []
             # a b c d
             for j in range(4):
-                coefficients.append(random.uniform(-1, 1))
+                coefficients.append(random.uniform(-0.99999, 1))
 
             # e f
             for j in range(2):
@@ -180,20 +181,20 @@ class EvolutionaryAlgorithm:
             self.population = new_population
             self.setup_individuals_in_species()
 
-    # TODO (Paweł)
     def adapt_degree_probabilities(self):
         """
             Changes VD vector based on fitness value of IFS in current population
         """
         best_individuals = self.get_best_individual_of_each_degree()
+        best_individuals_fitness = [i.fitness for i in best_individuals]
 
-        fitness_sum = np.sum([i.fitness for i in best_individuals])
-        normalized_values = [round(float(i.fitness) / fitness_sum, 2) for i in best_individuals]
+        normalized_values = MathHelper.normalize_probabilities(best_individuals_fitness, True)
 
-        # for idx, val in enumerate(normalized_values):
-        #     self.degree_probabilities[idx+1] = round(val, 2)
+        for key in self.degree_probabilities:
+            self.degree_probabilities[key] = 0
 
-        print(normalized_values)
+        for idx, item in enumerate(best_individuals):
+            self.degree_probabilities[item.degree] = normalized_values[idx]
 
     def get_best_individual_of_each_degree(self) -> list[Ifs]:
         """

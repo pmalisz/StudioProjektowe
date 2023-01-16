@@ -1,11 +1,11 @@
 import copy
-import math
 
 import numpy as np
+from utils.math_helper import MathHelper
 from utils.img_processor import ImgProcessor
 
 from models.singel import Singel
-
+import math
 
 class Ifs:
     degree: int
@@ -25,20 +25,10 @@ class Ifs:
             normalized, so they sum up to 1 within given IFS
         """
 
-        probabilities = [singel.probability for singel in self.singels]
-        normalized_probabilities = [float(i) / sum(probabilities) for i in probabilities]
+        normalized_probabilities = MathHelper.normalize_probabilities([singel.probability for singel in self.singels])
 
         for i in range(self.degree):
-            self.singels[i].probability = round(normalized_probabilities[i], 2)
-
-        diff = np.sum([singel.probability for singel in self.singels]) - 1
-        if not math.isclose(diff, 0):
-            while True:
-                random_singel_index = np.random.randint(0, self.degree)
-                random_singel = self.singels[random_singel_index]
-                if random_singel.probability > diff:
-                    random_singel.probability -= diff
-                    break
+            self.singels[i].probability = normalized_probabilities[i]
 
     # TODO img augmentation
     def calculate_fitness(self, origin: np.ndarray, iterations: int, size: int):
