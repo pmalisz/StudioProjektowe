@@ -1,3 +1,6 @@
+import random
+
+
 class Singel:
     coefficients: list[float]
     probability: float
@@ -12,6 +15,10 @@ class Singel:
         self.f = self.coefficients[5]
         self.probability = probability
 
-    # TODO
     def mutate(self):
-        raise NotImplementedError()
+        random_coefficient_idx = random.randint(0, 5)
+        if random_coefficient_idx < 4:
+            self.coefficients[random_coefficient_idx] = random.uniform(-0.99, 1)
+        else:
+            self.coefficients[random_coefficient_idx] = random.uniform(-2, 2) # TODO change fixed values
+

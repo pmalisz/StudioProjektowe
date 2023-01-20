@@ -1,4 +1,5 @@
 import copy
+import random
 
 import numpy as np
 from utils.math_helper import MathHelper
@@ -6,6 +7,7 @@ from utils.img_processor import ImgProcessor
 
 from models.singel import Singel
 import math
+
 
 class Ifs:
     degree: int
@@ -41,12 +43,14 @@ class Ifs:
         self.fractal = ImgProcessor.generate_fractal(iterations, size, functions, probabilities)
 
         # TODO Na razie działa to z założeniem że rozmiar obrazu wejściowego jest taki jak obrazów generowanych
-        self.fitness = size**2
+        self.fitness = size ** 2
         for x in range(size):
             for y in range(size):
                 if self.fractal[x][y] == origin[x][y]:
                     self.fitness -= 1
 
-    # TODO
     def mutate(self):
-        raise NotImplementedError()
+        how_many_singels_to_mutate = random.randint(1, len(self.singels))
+        for i in range(how_many_singels_to_mutate):
+            singel_to_mutate = self.singels[random.randint(0, len(self.singels)-1)]
+            singel_to_mutate.mutate()

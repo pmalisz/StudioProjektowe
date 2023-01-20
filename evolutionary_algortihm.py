@@ -100,7 +100,7 @@ class EvolutionaryAlgorithm:
             coefficients = []
             # a b c d
             for j in range(4):
-                coefficients.append(random.uniform(-0.99999, 1))
+                coefficients.append(random.uniform(-0.99, 1))
 
             # e f
             for j in range(2):
@@ -198,7 +198,7 @@ class EvolutionaryAlgorithm:
 
     def get_best_individual_of_each_degree(self) -> list[Ifs]:
         """
-            Gets list of IFS with best fitness from current population, one for each degree
+            Gets list of IFS with the best fitness from current population, one for each degree
         """
         best_individuals = []
         for degree in self.degree_probabilities:
