@@ -1,4 +1,5 @@
 import copy
+from typing import Callable
 
 import cv2
 import random
@@ -159,11 +160,11 @@ class EvolutionaryAlgorithm:
             remaining = POPULATION_SIZE - len(new_population)
 
             # N1
-            new_population.extend(self.create_ifs_by_crossover(int(remaining/4)))
+            #new_population.extend(self.create_ifs_by_crossover(int(remaining/4)))
             remaining -= int(remaining/4)
 
             # N2
-            new_population.extend(self.self_creation(int(remaining / 3)))
+            #new_population.extend(self.self_creation(int(remaining / 3)))
             remaining -= int(remaining / 3)
 
             # N3
@@ -180,6 +181,7 @@ class EvolutionaryAlgorithm:
 
             self.population = new_population
             self.setup_individuals_in_species()
+            #self.purge_species()
 
     def adapt_degree_probabilities(self):
         """
@@ -220,22 +222,113 @@ class EvolutionaryAlgorithm:
     def vector_crossover(self):
         raise NotImplementedError()
 
-    # TODO
+    def choose_parents_and_perform_crossover(self, how_many: int, crossover: Callable) -> list[Ifs]:
+        """
+            wrapper for crossover operations
+        """
+        children = []
+        possible_parents = random.sample(self.population, len(self.population))
+        for _ in range(how_many):
+            # basically do while loop
+            while True:
+                parent1 = possible_parents.pop()
+                parent2 = possible_parents.pop()
+                if parent1 != parent2 and parent2.degree != parent1.degree:
+                    break
+
+                possible_parents.append(parent1)
+                possible_parents.append(parent2)
+                random.shuffle(possible_parents)
+            children.extend(crossover(parent1, parent2))
+
+        return children
+
     def create_ifs_by_inter_species_crossover(self, how_many: int) -> list[Ifs]:
-        raise NotImplementedError()
+        """
+            Performs inter_species_crossover how_many//2 times
+        """
+        return self.choose_parents_and_perform_crossover(how_many//2, self.inter_species_crossover)
 
-    # TODO
-    def inter_species_crossover(self):
-        raise NotImplementedError()
+    def inter_species_crossover(self, parent1: Ifs, parent2: Ifs) -> tuple[Ifs, Ifs]:
+        child1_singels = []
+        child2_singels = []
 
-    # TODO
+        for _ in range(parent1.degree):
+            singel1 = random.choice(parent1.singels)
+            singel2 = random.choice(parent2.singels)
+            crossed_singel = Singel.cross_singels(singel1, singel2)
+            child1_singels.append(crossed_singel)
+
+        for _ in range(parent2.degree):
+            singel1 = random.choice(parent1.singels)
+            singel2 = random.choice(parent2.singels)
+            crossed_singel = Singel.cross_singels(singel1, singel2)
+            child2_singels.append(crossed_singel)
+
+        return Ifs(child1_singels), Ifs(child2_singels)
+
     def create_ifs_by_reassortment(self, how_many: int) -> list[Ifs]:
-        raise NotImplementedError()
+        """
+            Performs reassortment how_many//2 times
+        """
+        return self.choose_parents_and_perform_crossover(how_many//2, self.reassortment)
 
-    # TODO
-    def reassortment(self):
-        raise NotImplementedError()
+    def reassortment(self, parent1: Ifs, parent2: Ifs) -> tuple[Ifs, Ifs]:
+        """
+            Creates two offspring by exchanging singels between parents
+        """
+        def choose_parent_with_singels(parents: list[list[Singel]], child_singels: list[Singel]):
+            """
+                Wrapper for preventing choosing list with no singels
+            """
+            random.shuffle(parents)
+            selected_parent = parents.pop()
+            if len(selected_parent) == 0:
+                selected_parent = parents.pop()
+            random.shuffle(selected_parent)
+            child_singels.append(selected_parent.pop())
 
-    # TODO
+        parent1_singels = [singel for singel in parent1.singels]
+        parent2_singels = [singel for singel in parent2.singels]
+        child1_singels = []
+        child2_singels = []
+
+        for _ in range(parent1.degree):
+            choose_parent_with_singels([parent1_singels, parent2_singels], child1_singels)
+        for _ in range(parent2.degree):
+            choose_parent_with_singels([parent1_singels, parent2_singels], child2_singels)
+
+        return Ifs(child1_singels), Ifs(child2_singels)
+
     def purge_species(self):
+        """
+        Removes whole species if it's population is less than %5 or it's average fitness is lower than THRESHOLD
+        and creates new specie if it's possible
+        """
+        population_size = len(self.population)
+        best_indivs = self.get_best_individual_of_each_degree()
+        for ifs in best_indivs:
+            if self.individuals_in_species[ifs.degree] / population_size < 0.05: #or self.best_fitness_for_specie[species] < #THRESHOLD:
+                for indiv in self.population:
+                    if indiv.degree == ifs.degree:
+                        self.population.remove(indiv)
+
+                self.individuals_in_species[ifs.degree] = 0
+                if self.get_next_free_degree() != -1:
+                    self.create_new_specie()
+                    pass
+                    #self.individuals_in_species[self.get_next_free_degree()] = 1 #have to generate new specie
+
+    def get_next_free_degree(self) -> int:
+        """
+        Returns first free degree on the right of specie with best fitness
+        """
+        specie_with_best_fitness = sorted(self.get_best_individual_of_each_degree(), key=lambda x: x.fitness)[0].degree
+        for i in range(specie_with_best_fitness + 1, MAX_DEGREE + 1):
+            if self.individuals_in_species[i] == 0:
+                return i
+        else:
+            return -1
+
+    def create_new_specie(self):
         raise NotImplementedError()

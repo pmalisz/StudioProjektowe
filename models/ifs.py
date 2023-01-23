@@ -54,3 +54,6 @@ class Ifs:
         for i in range(how_many_singels_to_mutate):
             singel_to_mutate = self.singels[random.randint(0, len(self.singels)-1)]
             singel_to_mutate.mutate()
+
+    def __repr__(self):
+        return f"Degree: {self.degree}, Fitness: {self.fitness}"
