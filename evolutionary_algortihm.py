@@ -235,9 +235,12 @@ class EvolutionaryAlgorithm:
 
         return result
 
-    # TODO
     def arithmetic_crossover(self, parent1: Ifs, parent2: Ifs) -> tuple[Ifs, Ifs]:
-        raise NotImplementedError()
+        point_of_division = random.randint(0, parent1.degree-1)
+        new_singels1 = parent1.singels[:point_of_division] + parent2.singels[point_of_division:]
+        new_singels2 = parent2.singels[:point_of_division] + parent1.singels[point_of_division:]
+
+        return Ifs(new_singels1), Ifs(new_singels2)
 
     # TODO
     def vector_crossover(self, parent1: Ifs, parent2: Ifs) -> tuple[Ifs, Ifs]:
