@@ -1,5 +1,6 @@
 import copy
 import random
+import sys
 
 import numpy as np
 from utils.math_helper import MathHelper
@@ -11,14 +12,14 @@ import math
 
 class Ifs:
     degree: int
-    fitness: float
+    fitness: int
     singels: list[Singel]
     fractal: np.ndarray
 
     def __init__(self, singels: list[Singel]):
         self.singels = copy.deepcopy(singels)
         self.degree = len(singels)
-        self.fitness = float("inf")
+        self.fitness = sys.maxsize
         self.normalize_singles_probabilities()
 
     def normalize_singles_probabilities(self):
@@ -42,7 +43,6 @@ class Ifs:
 
         self.fractal = ImgProcessor.generate_fractal(iterations, size, functions, probabilities)
 
-        # TODO Na razie działa to z założeniem że rozmiar obrazu wejściowego jest taki jak obrazów generowanych
         self.fitness = size ** 2
         for x in range(size):
             for y in range(size):

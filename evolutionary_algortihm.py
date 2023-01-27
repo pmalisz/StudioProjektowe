@@ -1,4 +1,5 @@
 import copy
+from fractions import Fraction
 from typing import Callable
 
 import cv2
@@ -123,7 +124,7 @@ class EvolutionaryAlgorithm:
         """
         result = []
         for i in range(size):
-            degree = random.choices(list(self.degree_probabilities.keys()), list(self.degree_probabilities.values()))[0]
+            degree = self.get_random_degree_based_on_vd()
             singels = []
             for j in range(degree):
                 singels.append(random.choice(self.universe))
@@ -210,16 +211,36 @@ class EvolutionaryAlgorithm:
 
         return best_individuals
 
-    # TODO
     def create_ifs_by_crossover(self, how_many: int) -> list[Ifs]:
+        """
+            Performs vector or arithmetic crossover operations with equal probability
+        """
+        result = []
+        for i in range(how_many//2):
+            degree = self.get_random_degree_based_on_vd()
+            ifs_for_degree = [x for x in self.population if x.degree == degree]
+
+            # Since we are minimizing fitness, we want lesser value to be more probable
+            weights = [Fraction(1, x.fitness) for x in ifs_for_degree]
+
+            random_individuals = random.choices(ifs_for_degree, weights, k=2)
+            parent1 = random_individuals[0]
+            parent2 = random_individuals[1]
+
+            random_crossover = random.getrandbits(1)
+            if random_crossover == 0:
+                result.extend(self.arithmetic_crossover(parent1, parent2))
+            else:
+                result.extend(self.vector_crossover(parent1, parent2))
+
+        return result
+
+    # TODO
+    def arithmetic_crossover(self, parent1: Ifs, parent2: Ifs) -> tuple[Ifs, Ifs]:
         raise NotImplementedError()
 
     # TODO
-    def arithmetic_crossover(self):
-        raise NotImplementedError()
-
-    # TODO
-    def vector_crossover(self):
+    def vector_crossover(self, parent1: Ifs, parent2: Ifs) -> tuple[Ifs, Ifs]:
         raise NotImplementedError()
 
     def choose_parents_and_perform_crossover(self, how_many: int, crossover: Callable) -> list[Ifs]:
@@ -300,35 +321,38 @@ class EvolutionaryAlgorithm:
 
         return Ifs(child1_singels), Ifs(child2_singels)
 
-    def purge_species(self):
-        """
-        Removes whole species if it's population is less than %5 or it's average fitness is lower than THRESHOLD
-        and creates new specie if it's possible
-        """
-        population_size = len(self.population)
-        best_indivs = self.get_best_individual_of_each_degree()
-        for ifs in best_indivs:
-            if self.individuals_in_species[ifs.degree] / population_size < 0.05: #or self.best_fitness_for_specie[species] < #THRESHOLD:
-                for indiv in self.population:
-                    if indiv.degree == ifs.degree:
-                        self.population.remove(indiv)
+    def get_random_degree_based_on_vd(self):
+        return random.choices(list(self.degree_probabilities.keys()), list(self.degree_probabilities.values()))[0]
 
-                self.individuals_in_species[ifs.degree] = 0
-                if self.get_next_free_degree() != -1:
-                    self.create_new_specie()
-                    pass
-                    #self.individuals_in_species[self.get_next_free_degree()] = 1 #have to generate new specie
-
-    def get_next_free_degree(self) -> int:
-        """
-        Returns first free degree on the right of specie with best fitness
-        """
-        specie_with_best_fitness = sorted(self.get_best_individual_of_each_degree(), key=lambda x: x.fitness)[0].degree
-        for i in range(specie_with_best_fitness + 1, MAX_DEGREE + 1):
-            if self.individuals_in_species[i] == 0:
-                return i
-        else:
-            return -1
-
-    def create_new_specie(self):
-        raise NotImplementedError()
+    # def purge_species(self):
+    #     """
+    #     Removes whole species if it's population is less than %5 or it's average fitness is lower than THRESHOLD
+    #     and creates new specie if it's possible
+    #     """
+    #     population_size = len(self.population)
+    #     best_indivs = self.get_best_individual_of_each_degree()
+    #     for ifs in best_indivs:
+    #         if self.individuals_in_species[ifs.degree] / population_size < 0.05: #or self.best_fitness_for_specie[species] < #THRESHOLD:
+    #             for indiv in self.population:
+    #                 if indiv.degree == ifs.degree:
+    #                     self.population.remove(indiv)
+    #
+    #             self.individuals_in_species[ifs.degree] = 0
+    #             if self.get_next_free_degree() != -1:
+    #                 self.create_new_specie()
+    #                 pass
+    #                 #self.individuals_in_species[self.get_next_free_degree()] = 1 #have to generate new specie
+    #
+    # def get_next_free_degree(self) -> int:
+    #     """
+    #     Returns first free degree on the right of specie with best fitness
+    #     """
+    #     specie_with_best_fitness = sorted(self.get_best_individual_of_each_degree(), key=lambda x: x.fitness)[0].degree
+    #     for i in range(specie_with_best_fitness + 1, MAX_DEGREE + 1):
+    #         if self.individuals_in_species[i] == 0:
+    #             return i
+    #     else:
+    #         return -1
+    #
+    # def create_new_specie(self):
+    #     raise NotImplementedError()
