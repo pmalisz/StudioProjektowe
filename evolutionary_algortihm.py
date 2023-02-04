@@ -151,8 +151,11 @@ class EvolutionaryAlgorithm:
 
             best_individuals = self.get_best_individual_of_each_degree()
             for best in best_individuals:
+                if gen in (249, 499, 749, 999):
+                    cv2.imwrite(f"data/IFS tree/better-tree-gen{gen+1}-degree{best.degree}-result.png", best.fractal)
+
                 if best.fitness <= FINAL_THRESHOLD:
-                    cv2.imwrite("data/fern/fern-result.png", best.fractal)
+                    cv2.imwrite("data/IFS tree/better-tree-result.png", best.fractal)
                     return
 
                 if best.fitness <= TH_THRESHOLD:
@@ -161,11 +164,11 @@ class EvolutionaryAlgorithm:
             remaining = POPULATION_SIZE - len(new_population)
 
             # N1
-            #new_population.extend(self.create_ifs_by_crossover(int(remaining/4)))
+            new_population.extend(self.create_ifs_by_crossover(int(remaining/4)))
             remaining -= int(remaining/4)
 
             # N2
-            #new_population.extend(self.self_creation(int(remaining / 3)))
+            new_population.extend(self.self_creation(int(remaining / 3)))
             remaining -= int(remaining / 3)
 
             # N3
@@ -221,17 +224,19 @@ class EvolutionaryAlgorithm:
             ifs_for_degree = [x for x in self.population if x.degree == degree]
 
             # Since we are minimizing fitness, we want lesser value to be more probable
-            weights = [Fraction(1, x.fitness) for x in ifs_for_degree]
+            weights = [1/x.fitness for x in ifs_for_degree]
 
             random_individuals = random.choices(ifs_for_degree, weights, k=2)
             parent1 = random_individuals[0]
             parent2 = random_individuals[1]
 
-            random_crossover = random.getrandbits(1)
-            if random_crossover == 0:
-                result.extend(self.arithmetic_crossover(parent1, parent2))
-            else:
-                result.extend(self.vector_crossover(parent1, parent2))
+            result.extend(self.arithmetic_crossover(parent1, parent2))
+
+            # random_crossover = random.getrandbits(1)
+            # if random_crossover == 0:
+            #     result.extend(self.arithmetic_crossover(parent1, parent2))
+            # else:
+            #     result.extend(self.vector_crossover(parent1, parent2))
 
         return result
 

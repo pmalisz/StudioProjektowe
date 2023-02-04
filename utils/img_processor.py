@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 
@@ -21,6 +23,8 @@ def get_image(points, size):
     points = points.astype(int)
     image = np.full((size + 1, size + 1), 255)
     for point in points:
+        if point[0] < 0 or point[1] < 0:
+            return image
         image[point[0]][point[1]] = 0
 
     return image
@@ -35,6 +39,7 @@ class ImgProcessor:
             k = apply_function(functions[function_number], points[-1])
             if k[0] is not float("inf") and k[1] is not float("inf"):
                 points.append(k)
+
         points = scale_and_round(points, size)
 
         return get_image(points, size)

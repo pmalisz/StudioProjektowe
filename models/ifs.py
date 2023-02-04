@@ -1,13 +1,14 @@
 import copy
+import math
 import random
 import sys
+import cv2
 
 import numpy as np
 from utils.math_helper import MathHelper
 from utils.img_processor import ImgProcessor
 
 from models.singel import Singel
-import math
 
 
 class Ifs:
@@ -33,7 +34,6 @@ class Ifs:
         for i in range(self.degree):
             self.singels[i].probability = normalized_probabilities[i]
 
-    # TODO img augmentation
     def calculate_fitness(self, origin: np.ndarray, iterations: int, size: int):
         functions = np.ndarray(shape=(self.degree, 2, 3), dtype=float)
         for idx, singel in enumerate(self.singels):
@@ -41,13 +41,59 @@ class Ifs:
 
         probabilities = [singel.probability for singel in self.singels]
 
+        if not math.isclose(np.sum(probabilities), 1):
+            self.fitness = size ** 2
+            return
+
         self.fractal = ImgProcessor.generate_fractal(iterations, size, functions, probabilities)
 
+        # self.calculate_base_fitness(size, origin)
+        self.calculate_better_fitness(size, origin)
+
+    def calculate_base_fitness(self, size, origin):
         self.fitness = size ** 2
+
         for x in range(size):
             for y in range(size):
                 if self.fractal[x][y] == origin[x][y]:
                     self.fitness -= 1
+
+        self.calculate_fitness_rotate(size, origin, cv2.ROTATE_90_CLOCKWISE)
+        self.calculate_fitness_rotate(size, origin, cv2.ROTATE_180)
+        self.calculate_fitness_rotate(size, origin, cv2.ROTATE_90_COUNTERCLOCKWISE)
+
+    def calculate_fitness_rotate(self, size, origin, rotation):
+        tmpFitness = size ** 2
+        fractal_rotated = cv2.rotate(self.fractal, rotation)
+        for x in range(size):
+            for y in range(size):
+                if fractal_rotated[x][y] == origin[x][y]:
+                    tmpFitness -= 1
+
+        if tmpFitness < self.fitness:
+            self.fitness = tmpFitness
+            self.fractal = fractal_rotated
+
+    def calculate_better_fitness(self, size, origin):
+        points_not_drawn = 0
+        points_not_needed = 0
+        points_in_image = 0
+        points_in_attractor = 0
+        for x in range(size):
+            for y in range(size):
+                if origin[x][y] == 0:
+                    points_in_image += 1
+                    if self.fractal[x][y] != 0:
+                        points_not_drawn += 1
+
+                if self.fractal[x][y] == 0:
+                    points_in_attractor += 1
+                    if origin[x][y] != 0:
+                        points_not_needed += 1
+
+        attractor_relative_coverage = points_not_drawn / points_in_image
+        points_outside_image = points_not_needed / points_in_attractor
+        self.fitness = int((attractor_relative_coverage + points_outside_image) * 1000)
 
     def mutate(self):
         how_many_singels_to_mutate = random.randint(1, len(self.singels))
