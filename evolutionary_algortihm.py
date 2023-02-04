@@ -158,8 +158,7 @@ class EvolutionaryAlgorithm:
                     cv2.imwrite("data/IFS tree/better-tree-result.png", best.fractal)
                     return
 
-                if best.fitness <= TH_THRESHOLD:
-                    new_population.append(copy.deepcopy(best))
+                new_population.append(copy.deepcopy(best))
 
             remaining = POPULATION_SIZE - len(new_population)
 

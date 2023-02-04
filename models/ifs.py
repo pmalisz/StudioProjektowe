@@ -75,6 +75,12 @@ class Ifs:
             self.fractal = fractal_rotated
 
     def calculate_better_fitness(self, size, origin):
+        self.calculate_better_fitness_general(size, origin, self.fractal)
+        self.calculate_better_fitness_general(size, origin, cv2.rotate(self.fractal, cv2.ROTATE_90_CLOCKWISE))
+        self.calculate_better_fitness_general(size, origin, cv2.rotate(self.fractal, cv2.ROTATE_180))
+        self.calculate_better_fitness_general(size, origin, cv2.rotate(self.fractal, cv2.ROTATE_90_COUNTERCLOCKWISE))
+
+    def calculate_better_fitness_general(self, size, origin, generated_fractal):
         points_not_drawn = 0
         points_not_needed = 0
         points_in_image = 0
@@ -83,17 +89,21 @@ class Ifs:
             for y in range(size):
                 if origin[x][y] == 0:
                     points_in_image += 1
-                    if self.fractal[x][y] != 0:
+                    if generated_fractal[x][y] != 0:
                         points_not_drawn += 1
 
-                if self.fractal[x][y] == 0:
+                if generated_fractal[x][y] == 0:
                     points_in_attractor += 1
                     if origin[x][y] != 0:
                         points_not_needed += 1
 
         attractor_relative_coverage = points_not_drawn / points_in_image
         points_outside_image = points_not_needed / points_in_attractor
-        self.fitness = int((attractor_relative_coverage + points_outside_image) * 1000)
+
+        tmp_fitness = int((attractor_relative_coverage + points_outside_image) * 1000)
+        if tmp_fitness < self.fitness:
+            self.fitness = tmp_fitness
+            self.fractal = generated_fractal
 
     def mutate(self):
         how_many_singels_to_mutate = random.randint(1, len(self.singels))
