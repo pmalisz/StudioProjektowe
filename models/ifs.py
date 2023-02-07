@@ -97,6 +97,9 @@ class Ifs:
                     if origin[x][y] != 0:
                         points_not_needed += 1
 
+        if points_in_attractor == 0:
+            return
+
         attractor_relative_coverage = points_not_drawn / points_in_image
         points_outside_image = points_not_needed / points_in_attractor
 

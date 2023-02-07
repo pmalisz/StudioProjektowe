@@ -153,6 +153,9 @@ class EvolutionaryAlgorithm:
             for best in best_individuals:
                 if gen in (249, 499, 749, 999):
                     cv2.imwrite(f"data/IFS tree/better-tree-gen{gen+1}-degree{best.degree}-result.png", best.fractal)
+                    f = open("data/IFS tree/ifsTree-fitness.txt", "a")
+                    f.write(f"gen: {gen+1}, degree: {best.degree}, fitness: {best.fitness}\n")
+                    f.close()
 
                 if best.fitness <= FINAL_THRESHOLD:
                     cv2.imwrite("data/IFS tree/better-tree-result.png", best.fractal)
